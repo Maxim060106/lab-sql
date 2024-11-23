@@ -1,0 +1,200 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Хост: MySQL-8.2
+-- Время создания: Ноя 23 2024 г., 14:02
+-- Версия сервера: 8.2.0
+-- Версия PHP: 8.2.18
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- База данных: `lab9`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `File`
+--
+
+CREATE TABLE `File` (
+  `file_id` int NOT NULL,
+  `file_name` varchar(255) NOT NULL,
+  `file_url` varchar(255) NOT NULL,
+  `file_type` enum('project','task') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Project`
+--
+
+CREATE TABLE `Project` (
+  `project_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Project_Files`
+--
+
+CREATE TABLE `Project_Files` (
+  `project_id` int NOT NULL,
+  `file_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Task`
+--
+
+CREATE TABLE `Task` (
+  `task_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `created_at` datetime DEFAULT NULL,
+  `due_date` datetime DEFAULT NULL,
+  `project_id` int DEFAULT NULL,
+  `author_id` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Task_Assignees`
+--
+
+CREATE TABLE `Task_Assignees` (
+  `task_id` int NOT NULL,
+  `user_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `Task_Files`
+--
+
+CREATE TABLE `Task_Files` (
+  `task_id` int NOT NULL,
+  `file_id` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Структура таблицы `User`
+--
+
+CREATE TABLE `User` (
+  `user_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `role` enum('author','assignee') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Индексы сохранённых таблиц
+--
+
+--
+-- Индексы таблицы `File`
+--
+ALTER TABLE `File`
+  ADD PRIMARY KEY (`file_id`);
+
+--
+-- Индексы таблицы `Project`
+--
+ALTER TABLE `Project`
+  ADD PRIMARY KEY (`project_id`);
+
+--
+-- Индексы таблицы `Project_Files`
+--
+ALTER TABLE `Project_Files`
+  ADD PRIMARY KEY (`project_id`,`file_id`),
+  ADD KEY `file_id` (`file_id`);
+
+--
+-- Индексы таблицы `Task`
+--
+ALTER TABLE `Task`
+  ADD PRIMARY KEY (`task_id`),
+  ADD KEY `project_id` (`project_id`),
+  ADD KEY `author_id` (`author_id`);
+
+--
+-- Индексы таблицы `Task_Assignees`
+--
+ALTER TABLE `Task_Assignees`
+  ADD PRIMARY KEY (`task_id`,`user_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Индексы таблицы `Task_Files`
+--
+ALTER TABLE `Task_Files`
+  ADD PRIMARY KEY (`task_id`,`file_id`),
+  ADD KEY `file_id` (`file_id`);
+
+--
+-- Индексы таблицы `User`
+--
+ALTER TABLE `User`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Ограничения внешнего ключа сохраненных таблиц
+--
+
+--
+-- Ограничения внешнего ключа таблицы `Project_Files`
+--
+ALTER TABLE `Project_Files`
+  ADD CONSTRAINT `project_files_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `Project` (`project_id`),
+  ADD CONSTRAINT `project_files_ibfk_2` FOREIGN KEY (`file_id`) REFERENCES `File` (`file_id`);
+
+--
+-- Ограничения внешнего ключа таблицы `Task`
+--
+ALTER TABLE `Task`
+  ADD CONSTRAINT `task_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `Project` (`project_id`),
+  ADD CONSTRAINT `task_ibfk_2` FOREIGN KEY (`author_id`) REFERENCES `User` (`user_id`);
+
+--
+-- Ограничения внешнего ключа таблицы `Task_Assignees`
+--
+ALTER TABLE `Task_Assignees`
+  ADD CONSTRAINT `task_assignees_ibfk_1` FOREIGN KEY (`task_id`) REFERENCES `Task` (`task_id`),
+  ADD CONSTRAINT `task_assignees_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `User` (`user_id`);
+
+--
+-- Ограничения внешнего ключа таблицы `Task_Files`
+--
+ALTER TABLE `Task_Files`
+  ADD CONSTRAINT `task_files_ibfk_1` FOREIGN KEY (`task_id`) REFERENCES `Task` (`task_id`),
+  ADD CONSTRAINT `task_files_ibfk_2` FOREIGN KEY (`file_id`) REFERENCES `File` (`file_id`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
